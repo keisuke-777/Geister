@@ -14,12 +14,15 @@ ColorRed = -1.0  # 赤確定
 ColorBlue = 1.0  # 青確定
 ColorUncertain = 0.0  # 完全に不明
 
+# 駒にIDくっつけてボードではIDで管理が現実的かなぁ
+class Piece:
+    hoge
 
 class Board:
     """ガイスターの盤面を管理するクラス"""
 
     def __init__(self):
-        super().__init__()
+        self.all_board = 
 
 
 class Game:
