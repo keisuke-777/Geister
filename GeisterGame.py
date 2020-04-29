@@ -136,7 +136,7 @@ class Move:
     """プレイヤのとり得る手を管理するクラス"""
 
     def __init__(self, player_id: int, pieces: List[Piece]):
-        if (player_id != 0) and (player_id != 1):
+        if (player_id != 1) and (player_id != 2):
             print("プレイヤーが明示的に与えられていません")
         else:
             self.player_id = player_id
@@ -174,7 +174,6 @@ class GameState:
 
 
 def main():
-    print("Hello World")
 
     P1 = Player(1)
     P2 = Player(2)
