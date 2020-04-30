@@ -21,6 +21,14 @@ EstimatedColorBlue = 1.0  # 青確定
 ColorRed = -1
 ColorBlue = 1
 
+
+class Strategy:
+    """プレイヤの戦略を決める"""
+
+    def __init__(self):
+        self.plan = "test"
+
+
 # プレイヤの選択肢を表現する際にプレイヤクラスは必須では？なんならボードがいらない説が出てきた→ボードは対称のゲームを分析するのに便利かも
 class Player:
     """一人のプレイヤーの状態をすべて記録するクラス"""
@@ -31,6 +39,7 @@ class Player:
         else:
             self.player_id = player_id  # プレイヤIDを保存
         # あとで相手の駒のリストも格納できるようにしといた方がいいかも(駒推測に使える)
+        self.strategy = Strategy()
 
         self.alive_red_pieces_num = 0  # 生きている赤駒の数
         self.alive_blue_pieces_num = 0  # 生きている青駒の数
@@ -106,8 +115,54 @@ class Board:
         # [4, 8, 0, 0, 14, 18],
         # [0, 0, 0, 0, 0,  0 ],
 
+    def move_pieces(self, move: str):
+        """文字列(11rみたいなやつ)を受けて駒を実際に動かす"""
+        if len(move) != 3:
+            print("move_pieces:与えられた動作命令が不正です")
+        else:
+            char_list_move = list(move)
+            # if 不正な手ではない
+            # 移動先に駒があればデリートリストに追加しなくてはならない
+
+            """駒の移動(移動対象,移動先 = 空, 移動対象)"""
+            if char_list_move[2] == "u":
+                (
+                    self.board[int(char_list_move[0])][int(char_list_move[1])],
+                    self.board[int(char_list_move[0]) - 1][int(char_list_move[1])],
+                ) = (0, self.board[int(char_list_move[0])][int(char_list_move[1])])
+            elif char_list_move[2] == "d":
+                (
+                    self.board[int(char_list_move[0])][int(char_list_move[1])],
+                    self.board[int(char_list_move[0]) + 1][int(char_list_move[1])],
+                ) = (0, self.board[int(char_list_move[0])][int(char_list_move[1])])
+            elif char_list_move[2] == "r":
+                (
+                    self.board[int(char_list_move[0])][int(char_list_move[1])],
+                    self.board[int(char_list_move[0])][int(char_list_move[1]) + 1],
+                ) = (0, self.board[int(char_list_move[0])][int(char_list_move[1])])
+            elif char_list_move[2] == "l":
+                (
+                    self.board[int(char_list_move[0])][int(char_list_move[1])],
+                    self.board[int(char_list_move[0])][int(char_list_move[1]) - 1],
+                ) = (0, self.board[int(char_list_move[0])][int(char_list_move[1])])
+            else:
+                print("与えられた動作命令の3文字目が不正です")
+
+    def return_objective_board(self):
+        """ボードをそのまま返す"""
+        for row in self.board:
+            for element in row:
+                if element == 0:
+                    print(element, end=" ")
+                elif self.pieceArr[element] == -1:
+                    print("r", end=" ")
+                elif self.pieceArr[element] == 1:
+                    print("b", end=" ")
+            print()
+
     def return_player1_board(self):
         """プレイヤー1から見たボードを返す"""
+        # 未実装
         for row in self.board:
             for element in row:
                 if element == 0:
@@ -120,6 +175,7 @@ class Board:
 
     def return_player2_board(self):
         """プレイヤー2から見たボードを返す"""
+        # 未実装
         print(self.board)
 
 
@@ -179,7 +235,26 @@ def main():
     P2 = Player(2)
     b = Board(P1, P2)
     b.reset_board()
-    b.return_player1_board()
+    b.return_objective_board()
+
+    print("u")
+    b.move_pieces("11u")
+    b.return_objective_board()
+
+    print("d")
+    b.reset_board()
+    b.move_pieces("11d")
+    b.return_objective_board()
+
+    print("r")
+    b.reset_board()
+    b.move_pieces("11r")
+    b.return_objective_board()
+
+    print("l")
+    b.reset_board()
+    b.move_pieces("11l")
+    b.return_objective_board()
 
 
 if __name__ == "__main__":
