@@ -3,6 +3,7 @@
 from typing import List, Tuple, Union
 import numpy as np
 import array
+import random
 
 # マジックナンバーは使いたくないよね(随時追加)
 WidthOfBoard = 6  # ボードの幅
@@ -21,11 +22,13 @@ EstimatedColorBlue = 1.0  # 青確定
 ColorRed = -1
 ColorBlue = 1
 
+DirectionList = ["u", "d", "r", "l"]
+
 # プレイヤの選択肢を表現する際にプレイヤクラスは必須では？なんならボードがいらない説が出てきた→ボードは対称のゲームを分析するのに便利かも
 class Player:
     """一人のプレイヤーの状態をすべて記録するクラス"""
 
-    def __init__(self, player_id: int):
+    def __init__(self, player_id: int, player_pieces_id_list: List[int]):
         if (player_id != 0) and (player_id != 1):
             print("プレイヤーが明示的に与えられていません")  # プレイヤIDが不正
         else:
@@ -37,7 +40,10 @@ class Player:
         self.captured_red_pieces_num = 0  # 捕獲された赤駒の数
         self.captured_blue_pieces_num = 0  # 捕獲された青駒の数
 
+        self.player_pieces_id_list = player_pieces_id_list
+
     def decide_move():
+        """未実装:行動を決定する"""
         pass
 
 
@@ -61,8 +67,8 @@ class Board:
         self.player2 = player2
 
         # プレイヤーと駒が持つIDを紐づける
-        self.player1_pieces_id_list = [1, 2, 3, 4, 5, 6, 7, 8]
-        self.player2_pieces_id_list = [11, 12, 13, 14, 15, 16, 17, 18]
+        self.player1_pieces_id_list = player1.player_pieces_id_list
+        self.player2_pieces_id_list = player2.player_pieces_id_list
 
         # 駒のIDに駒の色を紐付ける
         # ここ気が狂うほど場当たり的なので、あとでなんとかする
@@ -175,10 +181,6 @@ class Board:
             print("与えられた動作命令の3文字目が不正です(udrlしか受け付けません)")
             return False
 
-        # 移動先に自分の駒が存在しているとアウト(自分の駒は殺せない)
-        if self.board[destination[0]][destination[1]] in player_pieces_id_list:
-            return False
-
         # 移動先がボード内に収まっていないならアウト(脱出は例外だけど処理は実装しないでいいかな(青駒が敵陣に潜り込んで殺されずにターン帰ってきたら勝利にするとか))
         if (
             destination[0] <= -1
@@ -186,6 +188,10 @@ class Board:
             or destination[1] <= -1
             or WidthOfBoard <= destination[1]
         ):
+            return False
+
+        # 移動先に自分の駒が存在しているとアウト(自分の駒は殺せない)
+        if self.board[destination[0]][destination[1]] in player_pieces_id_list:
             return False
 
         return True
@@ -283,17 +289,29 @@ class GameState:
         """ゲームの終了を判定"""
 
 
+def return_all_move_choice(board: Board, player: Player) -> List[str]:
+    """妥当な手(打つことが出来る手)を全て羅列したリストを返す"""
+    choice_list = []
+    for pieces_id in player.player_pieces_id_list:
+        players_piece = np.where(board.board == pieces_id)
+        for direction in DirectionList:
+            move = str(players_piece[0][0]) + str(players_piece[1][0]) + direction
+            if board.check_regular_move(move, player.player_pieces_id_list):
+                choice_list.append(move)
+    return choice_list
+
+
 """戦略は逐一関数で実装する"""
 
 
-def randam_move(player: Player, board: Board) -> str:
-    return None
+def random_move(board: Board, player: Player) -> str:
+    return random.choice(return_all_move_choice(board, player))
 
 
 def main():
 
-    P1 = Player(1)
-    P2 = Player(2)
+    P1 = Player(1, [1, 2, 3, 4, 5, 6, 7, 8])
+    P2 = Player(2, [11, 12, 13, 14, 15, 16, 17, 18])
     b = Board(P1, P2)
     b.reset_board()
     b.return_objective_board()
@@ -311,12 +329,20 @@ def main():
     print()
     print(b.check_regular_move("12d", b.player1_pieces_id_list))
 
-    b.move_pieces_without_check("10u")
+    # b.move_pieces_without_check("10u")
     print(b.check_regular_move("00u", b.player1_pieces_id_list))
 
     print(b.check_regular_move("00ぷ", b.player1_pieces_id_list))
 
     print(b.check_regular_move("いいね", b.player1_pieces_id_list))
+
+    print(return_all_move_choice(b, P1))
+    print(return_all_move_choice(b, P2))
+
+    random.seed()  # 乱数を初期化
+    print(random_move(b, P1))
+    print(random_move(b, P1))
+    print(random_move(b, P1))
 
 
 if __name__ == "__main__":
