@@ -21,14 +21,6 @@ EstimatedColorBlue = 1.0  # 青確定
 ColorRed = -1
 ColorBlue = 1
 
-
-class Strategy:
-    """プレイヤの戦略を決める"""
-
-    def __init__(self):
-        self.plan = "test"
-
-
 # プレイヤの選択肢を表現する際にプレイヤクラスは必須では？なんならボードがいらない説が出てきた→ボードは対称のゲームを分析するのに便利かも
 class Player:
     """一人のプレイヤーの状態をすべて記録するクラス"""
@@ -39,12 +31,14 @@ class Player:
         else:
             self.player_id = player_id  # プレイヤIDを保存
         # あとで相手の駒のリストも格納できるようにしといた方がいいかも(駒推測に使える)
-        self.strategy = Strategy()
 
         self.alive_red_pieces_num = 0  # 生きている赤駒の数
         self.alive_blue_pieces_num = 0  # 生きている青駒の数
         self.captured_red_pieces_num = 0  # 捕獲された赤駒の数
         self.captured_blue_pieces_num = 0  # 捕獲された青駒の数
+
+    def decide_move():
+        pass
 
 
 class Board:
@@ -270,28 +264,6 @@ class Piece:
         self.estimated_color = EstimatedColorUncertain  # 駒の色に対する推定値(駒推定の時に使うはず)
 
 
-class Move:
-    """プレイヤのとり得る手を管理するクラス"""
-
-    def __init__(self, player_id: int, pieces: List[Piece]):
-        if (player_id != 1) and (player_id != 2):
-            print("プレイヤーが明示的に与えられていません")
-        else:
-            self.player_id = player_id
-            self.pieces = pieces
-
-    def check_regular_move(move: str) -> bool:
-        """妥当な手かどうかチェック"""
-        # そこに自分の駒が存在している
-        # 移動先がボード内に収まっている(脱出は例外)
-        # 移動先に自分の駒が存在しない
-
-    def return_regular_move_list() -> List[str]:
-        """妥当な手(不正でない手)を11nみたいな文字列のリストで返す(全探索で将来的に使うはず)"""
-        for piece in self.pieces:
-            print(piece.x)
-
-
 class Game:
     """ゲーム全体を管理"""
 
@@ -309,6 +281,13 @@ class GameState:
 
     def game_is_over() -> bool:
         """ゲームの終了を判定"""
+
+
+"""戦略は逐一関数で実装する"""
+
+
+def randam_move(player: Player, board: Board) -> str:
+    return None
 
 
 def main():
