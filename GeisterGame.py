@@ -66,6 +66,10 @@ class Board:
         self.player1 = player1
         self.player2 = player2
 
+        # プレイヤーと駒が持つIDを紐づける
+        self.player1_pieces_id_list = [1, 2, 3, 4, 5, 6, 7, 8]
+        self.player2_pieces_id_list = [11, 12, 13, 14, 15, 16, 17, 18]
+
         # 駒のIDに駒の色を紐付ける
         # ここ気が狂うほど場当たり的なので、あとでなんとかする
         self.pieceArr = array.array(
@@ -98,13 +102,30 @@ class Board:
         self.board = np.array(
             [
                 [0, 0, 0, 0, 0, 0],
-                [1, 5, 0, 0, 11, 15],
-                [2, 6, 0, 0, 12, 16],
-                [3, 7, 0, 0, 13, 17],
-                [4, 8, 0, 0, 14, 18],
+                [0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 0],
             ]
         )
+        self.board[1][0] = self.player1_pieces_id_list[0]
+        self.board[2][0] = self.player1_pieces_id_list[1]
+        self.board[3][0] = self.player1_pieces_id_list[2]
+        self.board[4][0] = self.player1_pieces_id_list[3]
+        self.board[1][1] = self.player1_pieces_id_list[4]
+        self.board[2][1] = self.player1_pieces_id_list[5]
+        self.board[3][1] = self.player1_pieces_id_list[6]
+        self.board[4][1] = self.player1_pieces_id_list[7]
+
+        self.board[1][4] = self.player2_pieces_id_list[0]
+        self.board[2][4] = self.player2_pieces_id_list[1]
+        self.board[3][4] = self.player2_pieces_id_list[2]
+        self.board[4][4] = self.player2_pieces_id_list[3]
+        self.board[1][5] = self.player2_pieces_id_list[4]
+        self.board[2][5] = self.player2_pieces_id_list[5]
+        self.board[3][5] = self.player2_pieces_id_list[6]
+        self.board[4][5] = self.player2_pieces_id_list[7]
 
         # IDは以下の通りに並べる(P1の駒が1~8、P2の駒が11~18)
 
@@ -147,6 +168,66 @@ class Board:
                 ) = (0, self.board[int(char_list_move[0])][int(char_list_move[1])])
             else:
                 print("与えられた動作命令の3文字目が不正です")
+
+    def check_regular_move(self, move: str, player_pieces_id_list: List[int]) -> bool:
+        """妥当な手かどうかをチェック→妥当なら:trueを返す"""
+
+        if len(move) != 3:
+            print("与えられた動作命令の長さが不正です")
+            return False
+        else:
+            char_list_move = list(move)
+
+            # 0文字目と1文字目は数字じゃないと不正
+            if not (char_list_move[0].isdecimal() and char_list_move[1].isdecimal()):
+                print("0文字目と1文字目は数字(10進数)で与える必要があります。")
+                return False
+
+            # 移動前のマスがボードに収まっているか確認
+            if (
+                int(char_list_move[0]) <= -1
+                or HeightOfBoard <= int(char_list_move[0])
+                or int(char_list_move[1]) <= -1
+                or WidthOfBoard <= int(char_list_move[1])
+            ):
+                print("与えられた動作命令の対象駒がボードからはみ出ています")
+                return False
+
+            # 移動前のマスに本当に自分の駒が存在するのかを確認する
+            if not (
+                self.board[int(char_list_move[0])][int(char_list_move[1])]
+                in player_pieces_id_list
+            ):
+                print("与えられた座標には自身の駒が存在しません")
+                return False
+
+            # 移動先を計算
+            if char_list_move[2] == "u":
+                destination = [int(char_list_move[0]) - 1, int(char_list_move[1])]
+            elif char_list_move[2] == "d":
+                destination = [int(char_list_move[0]) + 1, int(char_list_move[1])]
+            elif char_list_move[2] == "r":
+                destination = [int(char_list_move[0]), int(char_list_move[1]) + 1]
+            elif char_list_move[2] == "l":
+                destination = [int(char_list_move[0]), int(char_list_move[1]) - 1]
+            else:
+                print("与えられた動作命令の3文字目が不正です(udrlしか受け付けません)")
+                return False
+
+            # 移動先に自分の駒が存在しているとアウト(自分の駒は殺せない)
+            if self.board[destination[0]][destination[1]] in player_pieces_id_list:
+                return False
+
+            # 移動先がボード内に収まっていないならアウト(脱出は例外だけど処理は実装しないでいいかな(青駒が敵陣に潜り込んで殺されずにターン帰ってきたら勝利にするとか))
+            if (
+                destination[0] <= -1
+                or HeightOfBoard <= destination[0]
+                or destination[1] <= -1
+                or WidthOfBoard <= destination[1]
+            ):
+                return False
+
+            return True
 
     def return_objective_board(self):
         """ボードをそのまま返す"""
@@ -255,6 +336,26 @@ def main():
     b.reset_board()
     b.move_pieces("11l")
     b.return_objective_board()
+
+    b.reset_board()
+    print(b.check_regular_move("11l", b.player1_pieces_id_list))
+    print(b.check_regular_move("11r", b.player1_pieces_id_list))
+    print(b.check_regular_move("11u", b.player1_pieces_id_list))
+    print(b.check_regular_move("11d", b.player1_pieces_id_list))
+    print()
+    print(b.check_regular_move("14l", b.player2_pieces_id_list))
+    print(b.check_regular_move("14r", b.player2_pieces_id_list))
+    print(b.check_regular_move("14u", b.player2_pieces_id_list))
+    print(b.check_regular_move("14d", b.player2_pieces_id_list))
+    print()
+    print(b.check_regular_move("12d", b.player1_pieces_id_list))
+
+    b.move_pieces("10u")
+    print(b.check_regular_move("00u", b.player1_pieces_id_list))
+
+    print(b.check_regular_move("00ぷ", b.player1_pieces_id_list))
+
+    print(b.check_regular_move("いいね", b.player1_pieces_id_list))
 
 
 if __name__ == "__main__":
